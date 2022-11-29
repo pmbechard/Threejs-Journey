@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getRandomRGB, getRandomXY } from '../../../Utilities/Utils';
+import { getRandomRGB, getRandomXY } from '../../../Utils/Utils';
 
 const scene = new THREE.Scene();
 
