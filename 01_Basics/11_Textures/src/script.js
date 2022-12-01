@@ -14,8 +14,8 @@ loadingManager.onError = () => console.log('Loading error');
 
 // -> Texture loading and converting from images
 const textureLoader = new THREE.TextureLoader(loadingManager);
-// const colorTexture = textureLoader.load('/textures/door/color.jpg');
-const colorTexture = textureLoader.load('/textures/minecraft.png');
+const colorTexture = textureLoader.load('/textures/door/color.jpg');
+// const colorTexture = textureLoader.load('/textures/checkerboard-8x8.png');
 const alphaTexture = textureLoader.load('/textures/door/alpha.jpg');
 const heightTexture = textureLoader.load('/textures/door/height.jpg');
 const normalTexture = textureLoader.load('/textures/door/normal.jpg');
@@ -51,7 +51,7 @@ const size = { width: window.innerWidth, height: innerHeight };
 const camera = new THREE.PerspectiveCamera(
   75,
   size.width / size.height,
-  0.1,
+  0.0001,
   100
 );
 camera.position.z = 3;
