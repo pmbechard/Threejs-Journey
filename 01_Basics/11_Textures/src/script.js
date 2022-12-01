@@ -1,87 +1,106 @@
-import './style.css'
-import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import './style.css';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import GUI from 'lil-gui';
+import gsap from 'gsap';
 
-/**
- * Base
- */
-// Canvas
-const canvas = document.querySelector('canvas.webgl')
+// --> TEXTURES
+// -> Loading Manager for handling progression of all assets
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onStart = () => console.log('Loading started');
+loadingManager.onProgress = () => console.log('Loading in progress');
+loadingManager.onLoad = () => console.log('Loading complete');
+loadingManager.onError = () => console.log('Loading error');
 
-// Scene
-const scene = new THREE.Scene()
+// -> Texture loading and converting from images
+const textureLoader = new THREE.TextureLoader(loadingManager);
+// const colorTexture = textureLoader.load('/textures/door/color.jpg');
+const colorTexture = textureLoader.load('/textures/minecraft.png');
+const alphaTexture = textureLoader.load('/textures/door/alpha.jpg');
+const heightTexture = textureLoader.load('/textures/door/height.jpg');
+const normalTexture = textureLoader.load('/textures/door/normal.jpg');
+const ambientOcclusionTexture = textureLoader.load(
+  '/textures/door/ambientOcclusion.jpg'
+);
+const metalnessTexture = textureLoader.load('/textures/door/metalness.jpg');
+const roughnessTexture = textureLoader.load('/textures/door/roughness.jpg');
 
-/**
- * Object
- */
-const geometry = new THREE.BoxGeometry(1, 1, 1)
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
-const mesh = new THREE.Mesh(geometry, material)
-scene.add(mesh)
+// -> Transforming a texture
+// colorTexture.repeat.x = 2;
+// colorTexture.repeat.y = 3;
+// colorTexture.wrapS = THREE.RepeatWrapping;
+// colorTexture.wrapT = THREE.RepeatWrapping;
+// colorTexture.offset.x = 0.5;
+// colorTexture.offset.y = 0.5;
+// colorTexture.center.x = 0.5;
+// colorTexture.center.y = 0.5;
+// colorTexture.rotation = Math.PI / 4;
 
-/**
- * Sizes
- */
-const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
-}
+// -> Filtering and MipMapping
+colorTexture.minFilter = THREE.NearestFilter;
+colorTexture.magFilter = THREE.NearestFilter;
+colorTexture.generateMipmaps = false; // IMPORTANT: Mipmaps are unnecessary when using NearestFilter
 
-window.addEventListener('resize', () =>
-{
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
+const canvas = document.querySelector('canvas.webgl');
+const scene = new THREE.Scene();
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ map: colorTexture });
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+const size = { width: window.innerWidth, height: innerHeight };
+const camera = new THREE.PerspectiveCamera(
+  75,
+  size.width / size.height,
+  0.1,
+  100
+);
+camera.position.z = 3;
+scene.add(camera);
 
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
+window.addEventListener('resize', () => {
+  size.width = window.innerWidth;
+  size.height = window.innerHeight;
+  camera.aspect = size.width / size.height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(size.width, size.height);
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+});
 
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-})
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
 
-/**
- * Camera
- */
-// Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.x = 1
-camera.position.y = 1
-camera.position.z = 1
-scene.add(camera)
+const gui = new GUI();
+const parameters = {
+  spin: () => {
+    gsap.to(mesh.rotation, {
+      duration: 5,
+      x: mesh.rotation.x + Math.PI * 2,
+      y: mesh.rotation.y + Math.PI * 2,
+      z: mesh.rotation.z + Math.PI * 2,
+    });
+  },
+};
+const cubeFolder = gui.addFolder('Cube');
+cubeFolder.add(mesh.position, 'x').name('x').min(-3).max(3);
+cubeFolder.add(mesh.position, 'y').name('y').min(-3).max(3);
+cubeFolder.add(mesh.position, 'z').name('z').min(-3).max(3);
+cubeFolder.addColor(material, 'color').name('Colour');
+cubeFolder.add(mesh, 'visible').name('Show/Hide');
+cubeFolder.add(material, 'wireframe').name('Wireframe On/Off');
+cubeFolder.add(parameters, 'spin').name('Spin');
 
-// Controls
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'h') gui._hidden ? gui.show() : gui.hide();
+});
 
-/**
- * Renderer
- */
-const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
-})
-renderer.setSize(sizes.width, sizes.height)
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+const renderer = new THREE.WebGLRenderer({ canvas });
+renderer.setSize(size.width, size.height);
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+renderer.render(scene, camera);
 
-/**
- * Animate
- */
-const clock = new THREE.Clock()
-
-const tick = () =>
-{
-    const elapsedTime = clock.getElapsedTime()
-
-    // Update controls
-    controls.update()
-
-    // Render
-    renderer.render(scene, camera)
-
-    // Call tick again on the next frame
-    window.requestAnimationFrame(tick)
-}
-
-tick()
+const tick = () => {
+  controls.update();
+  renderer.render(scene, camera);
+  window.requestAnimationFrame(tick);
+};
+tick();
