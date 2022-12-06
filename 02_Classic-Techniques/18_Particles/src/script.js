@@ -2,7 +2,6 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import GUI from 'lil-gui';
-import { SphereGeometry } from 'three';
 
 const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
