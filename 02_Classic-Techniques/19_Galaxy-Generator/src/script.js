@@ -2,101 +2,86 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import GUI from 'lil-gui';
+import { BufferGeometry } from 'three';
 
 const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
 
 const textureLoader = new THREE.TextureLoader();
 
-const fog = new THREE.Fog(0x111111, 0.1, 25);
-scene.fog = fog;
+// --> GALAXY
+const params = {
+  count: 100000,
+  size: 0.01,
+  radius: 5,
+  branches: 3,
+  spin: 1,
+  randomness: 0.2,
+  randomnessStrength: 3,
+  insideColour: '#ff6030',
+  outsideColour: '#1b3984',
+};
 
-const sphere = new THREE.Points(
-  new THREE.SphereGeometry(1, 32, 32),
-  new THREE.PointsMaterial({
-    size: 0.02,
+let geometry = null;
+let material = null;
+let points = null;
+const generateGalaxy = () => {
+  if (geometry) geometry.dispose();
+  if (material) material.dispose();
+  if (points) scene.remove(points);
+
+  geometry = new BufferGeometry();
+  const positions = new Float32Array(params.count * 3);
+  const colours = new Float32Array(params.count * 3);
+
+  const insideColour = new THREE.Color(params.insideColour);
+  const outsideColour = new THREE.Color(params.outsideColour);
+
+  for (let i = 0; i < params.count; i++) {
+    // -> Positions
+    const i3 = i * 3;
+    const radius = Math.random() * params.radius;
+    const branchAngle = ((i % params.branches) / params.branches) * Math.PI * 2;
+    const spinAngle = radius * params.spin;
+
+    const randomX =
+      Math.pow(Math.random(), params.randomnessStrength) *
+      (Math.random() < 0.5 ? 1 : -1);
+    const randomY =
+      Math.pow(Math.random(), params.randomnessStrength) *
+      (Math.random() < 0.5 ? 1 : -1);
+    const randomZ =
+      Math.pow(Math.random(), params.randomnessStrength) *
+      (Math.random() < 0.5 ? 1 : -1);
+
+    positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+    positions[i3 + 1] = randomY;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+    // -> Colours
+    const mixedColour = insideColour
+      .clone()
+      .lerp(outsideColour, radius / params.radius);
+
+    colours[i3] = mixedColour.r;
+    colours[i3 + 1] = mixedColour.g;
+    colours[i3 + 2] = mixedColour.b;
+  }
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colours, 3));
+
+  material = new THREE.PointsMaterial({
+    size: params.size,
     sizeAttenuation: true,
-    color: 0x00ffff,
-    transparent: true,
-    opacity: 0.1,
     depthWrite: false,
-  })
-);
-sphere.castShadow = true;
-scene.add(sphere);
+    blending: THREE.AdditiveBlending,
+    vertexColors: true,
+  });
 
-const innerSphere = new THREE.Mesh(
-  new THREE.SphereGeometry(1, 32, 32),
-  new THREE.MeshStandardMaterial({
-    color: 0x00ffff,
-    transparent: true,
-    opacity: 0.05,
-    depthWrite: false,
-  })
-);
-innerSphere.castShadow = true;
-scene.add(innerSphere);
-
-const cone = new THREE.Mesh(
-  new THREE.ConeGeometry(0.95, 2.4, 16, 1, true),
-  new THREE.MeshStandardMaterial({
-    color: 0x00ffff,
-    transparent: true,
-    opacity: 0.03,
-    wireframe: true,
-    depthWrite: false,
-  })
-);
-cone.position.y = -1.5;
-cone.rotation.x = Math.PI;
-cone.receiveShadow = true;
-scene.add(cone);
-
-// const innerCone = new THREE.Mesh(
-//   new THREE.ConeGeometry(0.95, 2.4, 16, 1, true),
-//   new THREE.MeshStandardMaterial({
-//     color: 0x00ffff,
-//     transparent: true,
-//     opacity: 0.01,
-//     depthWrite: false,
-//   })
-// );
-// innerCone.position.y = -1.5;
-// innerCone.rotation.x = Math.PI;
-// innerCone.receiveShadow = true;
-// scene.add(innerCone);
-
-const lightBox = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.2, 0.2, 1, 12, 12, true),
-  new THREE.MeshStandardMaterial({ color: 0x000000 })
-);
-lightBox.position.y = -2.8;
-scene.add(lightBox);
-
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(30, 30),
-  new THREE.MeshStandardMaterial({ color: 0x000000 })
-);
-floor.position.y = -2.8;
-floor.rotation.x = Math.PI / -2;
-scene.add(floor);
-
-const spotLight = new THREE.SpotLight(0x00ffff, 8);
-spotLight.position.y = -4;
-spotLight.angle = 0.35;
-spotLight.castShadow = true;
-spotLight.distance = 10;
-spotLight.penumbra = 2;
-scene.add(spotLight);
-// const spotLightHelper = new THREE.SpotLightHelper(spotLight);
-// scene.add(spotLightHelper);
-
-const pointLight = new THREE.PointLight(0xffffff, 1);
-pointLight.position.x = 5;
-scene.add(pointLight);
-
-const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-scene.add(ambientLight);
+  points = new THREE.Points(geometry, material);
+  scene.add(points);
+};
+generateGalaxy();
 
 const size = { width: window.innerWidth, height: window.innerHeight };
 
@@ -106,26 +91,76 @@ const camera = new THREE.PerspectiveCamera(
   0.01,
   1000
 );
-camera.position.z = 6;
-camera.position.y = -2;
-camera.lookAt(cone.position);
+camera.position.y = 3;
+camera.position.x = 3;
+camera.position.z = 3;
 scene.add(camera);
 
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
-controls.autoRotate = true;
 
-const gui = new GUI();
-gui.hide();
-gui.add(sphere.material, 'size').min(0.001).max(0.1);
-gui.addColor(sphere.material, 'color');
-gui.add(controls, 'autoRotate');
-gui.add(controls, 'autoRotateSpeed').min(0.1).max(20);
+const gui = new GUI({ width: 350 });
+gui
+  .add(params, 'count')
+  .min(100)
+  .max(100000)
+  .step(100)
+  .name('Star Count')
+  .onFinishChange(generateGalaxy);
+gui
+  .add(params, 'size')
+  .min(0.001)
+  .max(0.1)
+  .step(0.001)
+  .name('Star Size')
+  .onFinishChange(generateGalaxy);
+gui
+  .add(params, 'radius')
+  .min(0.01)
+  .max(20)
+  .step(0.01)
+  .name('Galaxy Radius')
+  .onFinishChange(generateGalaxy);
+gui
+  .add(params, 'branches')
+  .min(2)
+  .max(20)
+  .step(1)
+  .name('Galaxy Branches')
+  .onFinishChange(generateGalaxy);
+gui
+  .add(params, 'spin')
+  .min(-5)
+  .max(5)
+  .step(0.001)
+  .name('Branch Spin')
+  .onFinishChange(generateGalaxy);
+gui
+  .add(params, 'randomness')
+  .min(0)
+  .max(2)
+  .step(0.001)
+  .name('Randomness')
+  .onFinishChange(generateGalaxy);
+gui
+  .add(params, 'randomnessStrength')
+  .min(1)
+  .max(10)
+  .step(0.001)
+  .name('Randomness Strength')
+  .onFinishChange(generateGalaxy);
+gui
+  .addColor(params, 'insideColour')
+  .name('Inside Colour')
+  .onFinishChange(generateGalaxy);
+gui
+  .addColor(params, 'outsideColour')
+  .name('Outside Colour')
+  .onFinishChange(generateGalaxy);
 
 const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-renderer.setClearColor(0x111111);
 renderer.render(scene, camera);
 
 const clock = new THREE.Clock();

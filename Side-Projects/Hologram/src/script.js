@@ -18,6 +18,7 @@ const sphere = new THREE.Points(
     transparent: true,
     opacity: 0.1,
     depthWrite: false,
+    blending: THREE.AdditiveBlending,
   })
 );
 sphere.castShadow = true;
@@ -30,6 +31,7 @@ const innerSphere = new THREE.Mesh(
     transparent: true,
     opacity: 0.05,
     depthWrite: false,
+    blending: THREE.AdditiveBlending,
   })
 );
 innerSphere.castShadow = true;
@@ -43,6 +45,7 @@ const cone = new THREE.Mesh(
     opacity: 0.03,
     wireframe: true,
     depthWrite: false,
+    blending: THREE.AdditiveBlending,
   })
 );
 cone.position.y = -1.6;
