@@ -36,7 +36,7 @@ innerSphere.castShadow = true;
 hologram.add(innerSphere);
 
 const cone = new THREE.Mesh(
-  new THREE.ConeGeometry(0.95, 2.4, 16, 1, true),
+  new THREE.ConeGeometry(0.88, 2.25, 16, 1, true),
   new THREE.MeshStandardMaterial({
     color: 0x00ffff,
     transparent: true,
@@ -45,7 +45,7 @@ const cone = new THREE.Mesh(
     depthWrite: false,
   })
 );
-cone.position.y = -1.5;
+cone.position.y = -1.6;
 cone.rotation.x = Math.PI;
 cone.receiveShadow = true;
 hologram.add(cone);
@@ -195,7 +195,7 @@ const tick = () => {
   // -> Rotate Animation
   if (params.enableRotation) {
     sphere.rotation.y = elapsedTime * params.rotationSpeed;
-    cone.rotation.y = elapsedTime * params.rotationSpeed;
+    cone.rotation.y = -elapsedTime * params.rotationSpeed;
   }
   // -> Flicker animation
   if (params.enableFlickering) {
