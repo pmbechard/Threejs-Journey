@@ -7,7 +7,7 @@ const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
 
 const params = {
-  atmosphereColour: 0xcccccc,
+  atmosphereColour: 0xb7b7b7,
   floorColour: 0xffffff,
   snowSize: 0.006,
   snowDensity: 100000,
