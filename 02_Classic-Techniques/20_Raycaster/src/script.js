@@ -22,6 +22,8 @@ const sphere3 = new THREE.Mesh(
   new THREE.MeshStandardMaterial({ color: 0xff0000 })
 );
 sphere3.position.x = 2;
+
+let spheres = [sphere1, sphere2, sphere3];
 scene.add(sphere1, sphere2, sphere3);
 
 // --> RAYCASTER
@@ -46,10 +48,12 @@ window.addEventListener('mousemove', (e) => {
 window.addEventListener('click', (e) => {
   if (currentIntersect) {
     console.log('obj clicked');
-    console.log(currentIntersect.object);
     currentIntersect.object.geometry.dispose();
     currentIntersect.object.material.dispose();
-    scene.remove(currentIntersect.object);
+    if (currentIntersect.object === sphere1) scene.remove(sphere1);
+    if (currentIntersect.object === sphere2) scene.remove(sphere2);
+    if (currentIntersect.object === sphere3) scene.remove(sphere3);
+    spheres = spheres.filter((sphere) => sphere !== currentIntersect.object);
     currentIntersect = null;
   }
 });
@@ -77,6 +81,7 @@ controls.enableDamping = true;
 
 // GUI
 const gui = new GUI();
+gui.hide();
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ canvas });
@@ -93,9 +98,9 @@ let currentIntersect = null;
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
-  sphere1.position.y = Math.sin(elapsedTime * 0.3) * 1.5;
-  sphere2.position.y = Math.sin(elapsedTime * 0.8) * 1.5;
-  sphere3.position.y = Math.sin(elapsedTime * 1.4) * 1.5;
+  if (sphere1) sphere1.position.y = Math.sin(elapsedTime * 0.3) * 1.5;
+  if (sphere2) sphere2.position.y = Math.sin(elapsedTime * 0.8) * 1.5;
+  if (sphere3) sphere3.position.y = Math.sin(elapsedTime * 1.4) * 1.5;
 
   // -> Testing ray intersections on each frame
   // const rayOrigin = new THREE.Vector3(-3, 0, 0);
@@ -111,9 +116,8 @@ const tick = () => {
 
   // -> Casting a ray based on the cursor
   raycaster.setFromCamera(cursor, camera);
-  for (const sphere of [sphere1, sphere2, sphere3])
-    sphere.material.color.set('#ff0000');
-  const intersects = raycaster.intersectObjects([sphere1, sphere2, sphere3]);
+  for (const sphere of spheres) sphere.material.color.set('#ff0000');
+  const intersects = raycaster.intersectObjects(spheres);
   for (const sphere of intersects) sphere.object.material.color.set('#0000ff');
 
   // -> Notifying mouseenter/mouseleave events on three.js objects
@@ -145,4 +149,16 @@ window.addEventListener('resize', () => {
 
 window.addEventListener('keydown', (e) => {
   if (e.key.toLowerCase() === 'h') gui._hidden ? gui.show() : gui.hide();
+  else if (e.code === 'Space') {
+    if (!scene.children.includes(sphere1)) {
+      scene.add(sphere1);
+      spheres.push(sphere1);
+    } else if (!scene.children.includes(sphere2)) {
+      scene.add(sphere2);
+      spheres.push(sphere2);
+    } else if (!scene.children.includes(sphere3)) {
+      scene.add(sphere3);
+      spheres.push(sphere3);
+    }
+  }
 });
