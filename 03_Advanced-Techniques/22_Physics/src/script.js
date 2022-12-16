@@ -2,10 +2,21 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import GUI from 'lil-gui';
-import CANNON from 'cannon';
+// import CANNON from 'cannon';
+import * as CANNON from 'cannon-es';
 
 const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
+
+// -> Sounds
+const hitSound = new Audio('/sounds/hit.mp3');
+const playHitSound = (collision) => {
+  const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+  if (impactStrength < 1.5) return;
+  hitSound.volume = Math.random();
+  hitSound.currentTime = 0;
+  hitSound.play();
+};
 
 const textureLoader = new THREE.TextureLoader();
 const cubeTextureLoader = new THREE.CubeTextureLoader();
@@ -35,10 +46,21 @@ const params = {
       y: 3,
       z: (Math.random() - 0.5) * 3,
     }),
+  reset: () => {
+    for (const obj of objectsToUpdate) {
+      obj.body.removeEventListener('collide', playHitSound);
+      world.removeBody(obj.body);
+      scene.remove(obj.mesh);
+    }
+    objectsToUpdate.splice(0, objectsToUpdate.length);
+  },
 };
 // -> World
 const world = new CANNON.World();
 world.gravity.set(0, params.gravity, 0);
+// -> Performance Improvements
+world.broadphase = new CANNON.SAPBroadphase(world);
+world.allowSleep = true;
 // -> Physics Materials
 const defaultMaterial = new CANNON.Material('default');
 
@@ -84,6 +106,7 @@ const createSphere = (radius, position) => {
     shape,
   });
   body.position.copy(position);
+  body.addEventListener('collide', playHitSound);
   world.addBody(body);
 
   objectsToUpdate.push({ mesh, body });
@@ -109,6 +132,7 @@ const createBox = (width, height, depth, position) => {
     shape,
   });
   body.position.copy(position);
+  body.addEventListener('collide', playHitSound);
   world.add(body);
 
   objectsToUpdate.push({ mesh, body });
@@ -177,6 +201,7 @@ gui
   );
 gui.add(params, 'createSphere');
 gui.add(params, 'createBox');
+gui.add(params, 'reset');
 
 const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(size.width, size.height);
