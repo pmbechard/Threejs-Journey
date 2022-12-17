@@ -10,6 +10,9 @@ const params = {
   particleDensity: 1000,
   particleColour: 0xaaaa00,
   atmosphereColour: 0x001111,
+  toggleAlarm: () => {
+    alarmSound.paused ? alarmSound.play() : alarmSound.pause();
+  },
   reset: () => {
     for (const obj of objectsToUpdate) {
       obj.body.removeEventListener('collide', playHitSound);
@@ -84,7 +87,7 @@ let prevPlaySound = 0;
 const playHitSound = (collision) => {
   const elapsedTime = soundClock.getElapsedTime();
   const deltaTime = elapsedTime - prevPlaySound;
-  if (deltaTime < 0.15) return;
+  if (deltaTime < 0.08) return;
   prevPlaySound = elapsedTime;
   const impactStrength = collision.contact.getImpactVelocityAlongNormal();
   if (impactStrength < 0.5) return;
@@ -99,14 +102,15 @@ const playHitSound = (collision) => {
     collision.target.position.z,
   ];
   const distanceFromOrigin = Math.max(...bodyPos, ...targetPos);
-  if (distanceFromOrigin > 20) return;
+  if (distanceFromOrigin > 15) return;
   const distanceFactor = Math.min(1, 1 - distanceFromOrigin / 100);
   hitSound.volume = Math.min(
     1,
     collision.contact.getImpactVelocityAlongNormal() / 20 + distanceFactor * 0.5
   );
-  hitSound.currentTime = 0.05;
-  hitSound.playbackRate = 0.75;
+  hitSound.currentTime = 0;
+  hitSound.playbackRate = 0.5;
+  hitSound.preservesPitch = false;
   hitSound.play();
 };
 
@@ -269,6 +273,11 @@ directionalLight.shadow.camera.right = 7;
 directionalLight.shadow.camera.bottom = -7;
 scene.add(directionalLight);
 
+const pointLight = new THREE.PointLight(0x770000, 1);
+pointLight.penumbra = 1;
+pointLight.position.set(-8, 5, -8);
+scene.add(pointLight);
+
 // --> CONTROLS
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
@@ -286,6 +295,7 @@ gui.addColor(params, 'atmosphereColour').onChange(() => {
   renderer.setClearColor(params.atmosphereColour);
   fog.color.set(params.atmosphereColour);
 });
+gui.add(params, 'toggleAlarm');
 gui.add(params, 'reset');
 
 // --> RENDERER
@@ -298,6 +308,10 @@ renderer.setClearColor(params.atmosphereColour);
 renderer.render(scene, camera);
 
 // --> TICK
+const alarmSound = new Audio('/sounds/alarm.mp3');
+alarmSound.volume = 0.1;
+alarmSound.loop = true;
+alarmSound.play();
 const clock = new THREE.Clock();
 let prevTime = 0;
 const tick = () => {
@@ -312,6 +326,9 @@ const tick = () => {
   }
 
   particleMesh.rotation.y = elapsedTime * 0.01;
+  pointLight.intensity = Math.sin(elapsedTime * 3);
+
+  if (camera.position.y < 1) camera.position.y = 1;
 
   controls.update();
   renderer.render(scene, camera);
