@@ -1,7 +1,47 @@
 import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import GUI from 'lil-gui';
+
+// --> MODEL LOADERS
+// -> DRACO-Compressed Files
+// IMPORTANT: DRACO files are much lighter and this loading set-up
+// can load DRACO and non-DRACO models. It works at a much faster
+// pace with DRACO files by using workers and WASM
+// IMPORTANT: TO set this up, you must copy the draco folder from
+// 'node_modules/three/examples/js/libs/' to the static folder
+// IMPORTANT: When to use DRACO: for many geometries - check load/lag time
+// const dracoLoader = new DRACOLoader();
+// dracoLoader.setDecoderPath('/draco/');
+// const gltfLoader = new GLTFLoader();
+// gltfLoader.setDRACOLoader(dracoLoader);
+// gltfLoader.load('/models/Duck/glTF-Draco/Duck.gltf', (gltf) => {
+//   while (gltf.scene.children.length) scene.add(gltf.scene.children[0]);
+//   scene.add(gltf.scene);
+// });
+
+// -> Non-DRACO loading
+// const gltfLoader = new GLTFLoader();
+// gltfLoader.load('/models/FlightHelmet/glTF/FlightHelmet.gltf', (gltf) => {
+//   while (gltf.scene.children.length) scene.add(gltf.scene.children[0]);
+//   scene.add(gltf.scene);
+// });
+
+// -> Animated Model
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('/draco/');
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+let mixer;
+gltfLoader.load('/models/Fox/glTF/Fox.gltf', (gltf) => {
+  mixer = new THREE.AnimationMixer(gltf.scene);
+  const action = mixer.clipAction(gltf.animations[1]);
+  action.play();
+  gltf.scene.scale.set(0.025, 0.025, 0.025);
+  scene.add(gltf.scene);
+});
 
 // -> PARAMETERS
 const params = {};
@@ -44,7 +84,7 @@ scene.add(directionalLight);
 const camera = new THREE.PerspectiveCamera(
   75,
   size.width / size.height,
-  0.1,
+  0.01,
   100
 );
 camera.position.set(2, 2, 2);
@@ -74,6 +114,10 @@ const tick = () => {
   const deltaTime = elapsedTime - prevTime;
   prevTime = elapsedTime;
 
+  // -> Model Animation
+  if (mixer) mixer.update(deltaTime);
+
+  if (camera.position.y < 1) camera.position.y = 1;
   controls.update();
   renderer.render(scene, camera);
   window.requestAnimationFrame(tick);
