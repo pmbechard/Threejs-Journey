@@ -7,6 +7,8 @@ import * as CANNON from 'cannon-es';
 // --> DEBUG PARAMS
 const params = {
   gravity: -1,
+  particleDensity: 1000,
+  particleColour: 0xaaaa00,
   atmosphereColour: 0x001111,
   reset: () => {
     for (const obj of objectsToUpdate) {
@@ -56,6 +58,8 @@ const groundHeight = textureLoader.load('/textures/ground/height.png');
 const groundNormal = textureLoader.load('/textures/ground/normal.jpg');
 const groundRoughness = textureLoader.load('/textures/ground/roughness.jpg');
 const groundMetallic = textureLoader.load('/textures/ground/metallic.jpg');
+
+const particleTexture = textureLoader.load('/textures/particles/1.png');
 
 const brickColor = textureLoader.load('/textures/brick/basecolor.jpg');
 brickColor.generateMipmaps = false;
@@ -116,6 +120,7 @@ const ground = new THREE.Mesh(
     aoMap: groundAO,
     normalMap: groundNormal,
     metalnessMap: groundMetallic,
+    side: THREE.DoubleSide,
   })
 );
 ground.receiveShadow = true;
@@ -129,6 +134,31 @@ const groundBody = new CANNON.Body({
 });
 groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 world.addBody(groundBody);
+
+// -> PARTICLES
+const particleGeometry = new THREE.BufferGeometry();
+const particlePositions = new Float32Array(params.particleDensity * 3);
+for (let i = 0; i < params.particleDensity; i++) {
+  const i3 = i * 3;
+  particlePositions[i3 + 0] = (Math.random() - 0.5) * 50;
+  particlePositions[i3 + 1] = Math.random() * 10;
+  particlePositions[i3 + 2] = (Math.random() - 0.5) * 50;
+}
+particleGeometry.setAttribute(
+  'position',
+  new THREE.BufferAttribute(particlePositions, 3)
+);
+const particleMaterial = new THREE.PointsMaterial({
+  color: params.particleColour,
+  alphaMap: particleTexture,
+  size: 0.08,
+  sizeAttenuation: true,
+  alphaTest: 0.001,
+  transparent: true,
+  depthWrite: false,
+});
+const particleMesh = new THREE.Points(particleGeometry, particleMaterial);
+scene.add(particleMesh);
 
 // -> BRICKS
 const objectsToUpdate = [];
@@ -280,6 +310,8 @@ const tick = () => {
     obj.mesh.position.copy(obj.body.position);
     obj.mesh.quaternion.copy(obj.body.quaternion);
   }
+
+  particleMesh.rotation.y = elapsedTime * 0.01;
 
   controls.update();
   renderer.render(scene, camera);
