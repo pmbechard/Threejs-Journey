@@ -15,7 +15,7 @@ const gui = new GUI();
 
 // MODEL LOADERS
 const dracoLoader = new DRACOLoader();
-dracoLoader.setPath('/draco/');
+dracoLoader.setDecoderPath('/draco/');
 
 const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
