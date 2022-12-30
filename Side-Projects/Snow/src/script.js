@@ -2,13 +2,21 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import GUI from 'lil-gui';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { RGBShiftShader } from 'three/examples/jsm/shaders/RGBShiftShader';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass';
 
 const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
 
 const params = {
-  atmosphereColour: 0xb7b7b7,
-  floorColour: 0xffffff,
+  atmosphereColour: 0x140000,
+  floorColour: 0x001404,
   snowSize: 0.006,
   snowDensity: 100000,
   snowSpeed: 0.001,
@@ -240,8 +248,57 @@ renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 renderer.setClearColor(params.atmosphereColour);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.render(scene, camera);
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.physicallyCorrectLights = true;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ReinhardToneMapping;
+renderer.toneMappingExposure = 1.5;
+
+// --> POST-PROCESSING
+// -> For Anti-Aliasing
+const renderTarget = new THREE.WebGLRenderTarget(800, 600, {
+  samples: renderer.getPixelRatio() === 1 ? 2 : 0,
+});
+
+// -> Post-Processing Pass Handler
+const effectComposer = new EffectComposer(renderer, renderTarget);
+effectComposer.setSize(size.width, size.height);
+effectComposer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+
+// -> Render Pass
+const renderPass = new RenderPass(scene, camera);
+effectComposer.addPass(renderPass);
+
+// -> RGB Shift Pass
+const rgbShiftPass = new ShaderPass(RGBShiftShader);
+rgbShiftPass.enabled = true;
+effectComposer.addPass(rgbShiftPass);
+gui.add(rgbShiftPass, 'enabled').name('Enable RGB Shift');
+
+// -> Unreal Bloom
+const unrealBloomPass = new UnrealBloomPass();
+unrealBloomPass.enabled = true;
+unrealBloomPass.strength = 0.2;
+unrealBloomPass.radius = 1;
+unrealBloomPass.threshold = 0.6;
+effectComposer.addPass(unrealBloomPass);
+gui.add(unrealBloomPass, 'enabled').name('Enable Bloom');
+
+// -> Glitch Pass
+const glitchPass = new GlitchPass();
+glitchPass.enabled = false;
+effectComposer.addPass(glitchPass);
+gui.add(glitchPass, 'enabled').name('Enable Glitch');
+
+// -> Pass for color correction
+const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+effectComposer.addPass(gammaCorrectionPass);
+
+// -> Anti-Aliasing Pass
+if (renderer.getPixelRatio() === 1 && !renderer.capabilities.isWebGL2) {
+  const smaaPass = new SMAAPass();
+  effectComposer.addPass(smaaPass);
+}
 
 // --> TICKER
 
@@ -259,7 +316,8 @@ const tick = () => {
     if (snow2.position.y < -20) snow2.position.y = 0;
   }
   controls.update();
-  renderer.render(scene, camera);
+  // renderer.render(scene, camera);
+  effectComposer.render();
   window.requestAnimationFrame(tick);
 };
 tick();
@@ -275,6 +333,9 @@ window.addEventListener('resize', () => {
 
   renderer.setSize(size.width, size.height);
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+
+  effectComposer.setSize(size.width, size.height);
+  effectComposer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 });
 
 window.addEventListener('keydown', (e) => {

@@ -181,7 +181,6 @@ effectComposer.addPass(rgbShiftPass);
 // -> Unreal Bloom
 const unrealBloomPass = new UnrealBloomPass();
 unrealBloomPass.enabled = false;
-unrealBloomPass.enabled = false;
 unrealBloomPass.strength = 0.3;
 unrealBloomPass.radius = 1;
 unrealBloomPass.threshold = 0.6;
@@ -237,8 +236,8 @@ tintPassFolder
   .max(1)
   .name('g');
 tintPassFolder
-  .add(tintPass.material.uniforms.uTint.value, 'z')
   .min(-1)
+  .add(tintPass.material.uniforms.uTint.value, 'z')
   .max(1)
   .name('b');
 tintPassFolder.close();
