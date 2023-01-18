@@ -3,7 +3,6 @@ import GUI from 'lil-gui';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 import firefliesVertexShader from './shaders/fireflies/vertex.glsl';
 import firefliesFragmentShader from './shaders/fireflies/fragment.glsl';
@@ -27,11 +26,7 @@ const scene = new THREE.Scene();
 // --> LOADERS
 const textureLoader = new THREE.TextureLoader();
 
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath('draco/');
-
 const gltfLoader = new GLTFLoader();
-gltfLoader.setDRACOLoader(dracoLoader);
 
 // --> TEXTURES
 const bakedTexture = textureLoader.load('baked.jpg');
@@ -91,6 +86,7 @@ gltfLoader.load('portal.glb', (gltf) => {
   bakedMesh.material = bakedMaterial;
 
   scene.add(gltf.scene);
+  animateCamera();
 });
 
 // --> FIREFLIES
@@ -228,7 +224,6 @@ function animateCamera() {
     ease: 'power1.inOut',
   });
 }
-animateCamera();
 const resetBtn = document.getElementById('reset-btn');
 resetBtn.addEventListener('click', () => animateCamera());
 
