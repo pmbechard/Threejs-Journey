@@ -1,7 +1,7 @@
 import './style.css';
 import GUI from 'lil-gui';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import gsap from 'gsap';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
@@ -10,10 +10,7 @@ import firefliesFragmentShader from './shaders/fireflies/fragment.glsl';
 import portalVertexShader from './shaders/portal/vertex.glsl';
 import portalFragmentShader from './shaders/portal/fragment.glsl';
 
-/**
- * Base
- */
-// Debug
+// --> GUI
 const debugObj = {};
 const gui = new GUI({
   width: 400,
@@ -23,23 +20,16 @@ window.addEventListener('keypress', (e) => {
   if (e.key.toLowerCase() === 'h') gui._hidden ? gui.show() : gui.hide();
 });
 
-// Canvas
+// --> SCENE
 const canvas = document.querySelector('canvas.webgl');
-
-// Scene
 const scene = new THREE.Scene();
 
-/**
- * Loaders
- */
-// Texture loader
+// --> LOADERS
 const textureLoader = new THREE.TextureLoader();
 
-// Draco loader
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('draco/');
 
-// GLTF loader
 const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
 
@@ -149,38 +139,28 @@ const fireflies = new THREE.Points(firefliesGeometry, firefliesMaterial);
 
 scene.add(fireflies);
 
-/**
- * Sizes
- */
+// --> SIZES AND RESIZING
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
-
 window.addEventListener('resize', () => {
-  // Update sizes
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
 
-  // Update camera
   camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
 
-  // Update renderer
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // Update fireflies
   firefliesMaterial.uniforms.uPixelRatio.value = Math.min(
     window.devicePixelRatio,
     2
   );
 });
 
-/**
- * Camera
- */
-// Base camera
+// --> CAMERA
 const camera = new THREE.PerspectiveCamera(
   45,
   sizes.width / sizes.height,
@@ -193,13 +173,66 @@ camera.position.z = 2.5;
 camera.rotation.x = -Math.PI / 16;
 scene.add(camera);
 
-// Controls
-// const controls = new OrbitControls(camera, canvas);
-// controls.enableDamping = true;
+// --> Animation function
+function animateCamera() {
+  // Reset starting location
+  gsap.to(camera.position, { x: 0, y: 0.8, z: 2.5, duration: 0.1 });
+  gsap.to(camera.rotation, { x: -Math.PI / 16, y: 0, duration: 0.1 });
+  const infoCard = document.getElementById('info-card');
+  infoCard.style.bottom = '-200vh';
+  infoCard.style.display = 'none';
 
-/**
- * Renderer
- */
+  // Move forward
+  gsap.to(camera.position, { z: -1.5, delay: 0.2, duration: 15, ease: 'sine' });
+
+  // Look right, left, up
+  gsap.to(camera.rotation, {
+    y: -Math.PI / 4,
+    delay: 1,
+    duration: 2,
+    ease: 'power1.inOut',
+  });
+  gsap.to(camera.rotation, {
+    y: Math.PI / 4,
+    delay: 3,
+    duration: 2,
+    ease: 'power1.inOut',
+  });
+  gsap.to(camera.rotation, {
+    y: 0,
+    delay: 5,
+    duration: 2,
+    ease: 'power1.inOut',
+  });
+  gsap.to(camera.rotation, {
+    x: Math.PI / 10,
+    delay: 6,
+    duration: 3,
+    ease: 'power1.inOut',
+  });
+
+  // Stairs
+  gsap.to(camera.position, {
+    y: 1.2,
+    delay: 8,
+    duration: 3,
+    ease: 'power2.inOut',
+  });
+
+  // Show HTML Card
+  gsap.to('#info-card', { display: 'flex', delay: 11 });
+  gsap.to('#info-card', {
+    bottom: '0',
+    delay: 12,
+    duration: 2,
+    ease: 'power1.inOut',
+  });
+}
+animateCamera();
+const resetBtn = document.getElementById('reset-btn');
+resetBtn.addEventListener('click', () => animateCamera());
+
+// --> RENDERER
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
   antialias: true,
@@ -214,9 +247,7 @@ gui
   .addColor(debugObj, 'clearColour')
   .onChange(() => renderer.setClearColor(debugObj.clearColour));
 
-/**
- * Animate
- */
+// --> TICKER
 const clock = new THREE.Clock();
 
 const tick = () => {
@@ -226,34 +257,8 @@ const tick = () => {
   firefliesMaterial.uniforms.uTime.value = elapsedTime;
   portalMaterial.uniforms.uTime.value = elapsedTime;
 
-  // Animate camera
-  camera.position.x = Math.sin(elapsedTime) * 0.05;
-  camera.position.z -= 0.005;
-  if (camera.position.z < -1.8) {
-    camera.position.x = 0;
-    camera.position.y = 0.8;
-    camera.position.z = 2.5;
-    camera.rotation.x = -Math.PI / 16;
-    clock.start();
-  }
-
-  if (camera.position.z > 0.65) {
-    camera.rotation.y = Math.sin(elapsedTime) * 0.5;
-  }
-
-  if (camera.position.z < -0.5) {
-    camera.position.y += 0.0025;
-  }
-
-  if (camera.position.z < 1) {
-    camera.rotation.x += 0.001;
-  }
-
-  // Render
   renderer.render(scene, camera);
 
-  // Call tick again on the next frame
   window.requestAnimationFrame(tick);
 };
-
 tick();
