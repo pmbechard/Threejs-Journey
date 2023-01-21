@@ -26,7 +26,7 @@ const App = ({ clickerCount, children }) => {
   return (
     <>
       {children}
-      <div>Total Clicks: {totalCount}</div>
+      <div>Total: {totalCount}</div>
       <button
         onClick={() => {
           setShowClickers(!showClickers);
