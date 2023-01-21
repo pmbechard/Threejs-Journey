@@ -5,6 +5,9 @@ import './style.css';
 
 createRoot(document.getElementById('root')).render(
   <>
-    <App />
+    <App clickerCount={3}>
+      <h1>Reactive Counter</h1>
+      <h2>Made with React</h2>
+    </App>
   </>
 );
