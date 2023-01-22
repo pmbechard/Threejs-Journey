@@ -1,16 +1,17 @@
 {
-  "name": "42_first-r3f-application",
+  "name": "43_drei",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-script build"
+    "build": "react-scripts build",
+    "start": "react-scripts start"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@react-three/drei": "^9.54.0",
     "@react-three/fiber": "^8.10.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
