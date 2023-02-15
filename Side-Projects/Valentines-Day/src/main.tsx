@@ -7,7 +7,7 @@ import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <Canvas
-    camera={{ fov: 45, near: 0.1, far: 2000, position: [2, 3, 12] }}
+    camera={{ fov: 45, near: 0.1, far: 2000, position: [0, 0, 100] }}
     gl={{
       antialias: true,
       toneMapping: THREE.ACESFilmicToneMapping,
