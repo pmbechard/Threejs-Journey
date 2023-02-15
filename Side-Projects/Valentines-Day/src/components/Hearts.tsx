@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Instances, Instance } from '@react-three/drei';
+import { Instances, Instance, Float } from '@react-three/drei';
 
-const particles = Array.from({ length: 30 }, () => ({
+const particles = Array.from({ length: 50 }, () => ({
   factor: THREE.MathUtils.randInt(1, 50),
   speed: THREE.MathUtils.randFloat(0.1, 2),
   xFactor: THREE.MathUtils.randFloatSpread(3000),
   yFactor: THREE.MathUtils.randFloatSpread(2000),
-  zFactor: THREE.MathUtils.randFloatSpread(1000),
+  zFactor: THREE.MathUtils.randFloatSpread(500),
 }));
 
 const heartShape = new THREE.Shape();
@@ -52,8 +52,8 @@ const Hearts = () => {
 function Heart({ factor, speed, xFactor, yFactor, zFactor }) {
   const ref = useRef();
   useFrame((state) => {
-    const t = factor + state.clock.elapsedTime * (speed / 2);
-    ref.current.scale.setScalar(Math.max(1, Math.cos(t) * 2));
+    const t = factor + state.clock.elapsedTime * (speed / 4);
+    ref.current.scale.setScalar(Math.max(1.1, Math.cos(t) * 1.5));
     ref.current.position.set(
       Math.cos(t) +
         Math.sin(t * 1) / 10 +
@@ -73,7 +73,16 @@ function Heart({ factor, speed, xFactor, yFactor, zFactor }) {
     );
     ref.current.rotation.y += 0.00001 * ref.current.position.z;
   });
-  return <Instance ref={ref} />;
+  return (
+    <Float
+      speed={0.6}
+      rotationIntensity={3}
+      floatIntensity={1}
+      floatingRange={[-0.1, 0.1]}
+    >
+      <Instance ref={ref} />
+    </Float>
+  );
 }
 
 export default Hearts;

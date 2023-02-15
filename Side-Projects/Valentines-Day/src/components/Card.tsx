@@ -1,6 +1,7 @@
 import { Center, Text3D } from '@react-three/drei';
 import React from 'react';
 import * as THREE from 'three';
+import { MeshNormalMaterial } from 'three';
 
 const Card = () => {
   return (
@@ -16,9 +17,11 @@ const Card = () => {
           bevelSize={0.02}
           bevelOffset={0}
           bevelSegments={5}
+          castShadow
         >
           Happy Valentine's Day, Allie!
-          <meshStandardMaterial color={new THREE.Color('rgb(49, 0, 128)')} />
+          {/* <meshPhongMaterial color={new THREE.Color('rgb(49, 0, 128)')} /> */}
+          <meshNormalMaterial />
         </Text3D>
       </Center>
     </>
