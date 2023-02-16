@@ -3,7 +3,11 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { Mesh } from 'three';
 
-const Contents: React.FC<{ side: number }> = ({ side }) => {
+interface Props {
+  side: number;
+}
+
+const Contents: React.FC<Props> = ({ side }) => {
   const textRef = useRef<Mesh>(null);
 
   useEffect(() => {
@@ -17,18 +21,19 @@ const Contents: React.FC<{ side: number }> = ({ side }) => {
     <Text3D
       ref={textRef}
       font='./fonts/Zeyada_Regular.json'
-      size={0.5}
-      height={0.15}
-      curveSegments={12}
+      size={0.1}
+      height={0.01}
+      curveSegments={24}
       bevelEnabled
       bevelThickness={0.02}
       bevelSize={0.02}
       bevelOffset={0}
-      bevelSegments={5}
+      bevelSegments={12}
       castShadow
-      position={[-3, -0.2, 0.5]}
+      position={[0, 0, 1]}
     >
       {side}
+      <meshStandardMaterial color='mediumpurple' />
     </Text3D>
   );
 };
