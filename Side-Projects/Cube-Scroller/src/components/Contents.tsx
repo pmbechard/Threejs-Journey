@@ -29,8 +29,8 @@ const Contents: React.FC<Props> = ({ side }) => {
       bevelSize={0.02}
       bevelOffset={0}
       bevelSegments={12}
-      castShadow
       position={[0, 0, 1]}
+      castShadow
     >
       {side}
       <meshStandardMaterial color='mediumpurple' />

@@ -1,10 +1,4 @@
-import {
-  Environment,
-  Float,
-  OrbitControls,
-  Sky,
-  Stars,
-} from '@react-three/drei';
+import { CameraShake, Float, Sky, Stars } from '@react-three/drei';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
@@ -15,7 +9,6 @@ import Cube from './components/Cube';
 
 function App() {
   const [side, setSide] = useState<number>(1);
-  const [inDarkMode, setInDarkMode] = useState<Boolean>(true);
 
   useFrame((e) => {
     gsap.to(e.camera.position, {
@@ -28,24 +21,25 @@ function App() {
 
   return (
     <>
-      {inDarkMode ? (
-        <Stars
-          radius={100}
-          depth={50}
-          count={5000}
-          factor={7}
-          saturation={40}
-          fade
-          speed={1}
-        />
-      ) : (
-        <Sky />
-      )}
-      <color attach='background' args={['#000000']} />
+      <Stars
+        radius={1}
+        depth={50}
+        count={5000}
+        factor={1}
+        saturation={40}
+        fade
+        speed={1}
+      />
+      <color attach='background' args={['#121212']} />
 
-      <pointLight castShadow color={'#ffffff'} position={[-10, -10, -10]} />
+      <pointLight
+        castShadow
+        color={'#fffddd'}
+        position={[0, 0, 10]}
+        intensity={0.01}
+      />
       <ambientLight intensity={0.5} />
-      <directionalLight position={[-3, 2, 1]} intensity={1.5} />
+      <directionalLight position={[-3, 2, 2]} intensity={1.5} castShadow />
 
       <Float>
         <Cube side={side} setSide={setSide} />
