@@ -1,7 +1,6 @@
 import { Float, OrbitControls, Sparkles } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import gsap from 'gsap';
-import { useEffect } from 'react';
 import * as THREE from 'three';
 import './App.css';
 import Card from './components/Card';

@@ -1,7 +1,5 @@
 import { Center, Text3D } from '@react-three/drei';
 import React from 'react';
-import * as THREE from 'three';
-import { MeshNormalMaterial } from 'three';
 
 const Card = () => {
   return (
@@ -20,7 +18,6 @@ const Card = () => {
           castShadow
         >
           Happy Valentine's Day, Allie!
-          {/* <meshPhongMaterial color={new THREE.Color('rgb(49, 0, 128)')} /> */}
           <meshNormalMaterial />
         </Text3D>
       </Center>
