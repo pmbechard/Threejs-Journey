@@ -1,5 +1,5 @@
-import { CameraShake, Float, Sky, Stars } from '@react-three/drei';
-import { useEffect, useRef, useState } from 'react';
+import { Float, Stars } from '@react-three/drei';
+import { useState } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import './App.css';
@@ -8,7 +8,7 @@ import { useFrame } from '@react-three/fiber';
 import Cube from './components/Cube';
 
 function App() {
-  const [side, setSide] = useState<number>(1);
+  const [side, setSide] = useState<number>(0);
 
   useFrame((e) => {
     gsap.to(e.camera.position, {

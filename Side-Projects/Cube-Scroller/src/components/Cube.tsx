@@ -29,20 +29,17 @@ const Cube: React.FC<Props> = ({ side, setSide }) => {
         delay: 1,
         ease: 'slow',
       });
-      let [x, y] = getXYRotation();
-      gsap.to(cubeRef.current.rotation, { x, y, duration: 2 });
+      setSide((side + 1) % 6);
+      gsap.to(cubeRef.current.rotation, {
+        x: cubeRef.current.rotation.x + Math.PI,
+        y: cubeRef.current.rotation.y + Math.PI,
+        duration: 2,
+      });
     }
   };
 
-  const getXYRotation = () => {
-    setSide((side + 1) % 6);
-    if (side === 0) return [0, 0];
-    else if (side === 3) return [0, Math.PI / 2];
-    else if (side === 1) return [0, Math.PI];
-    else if (side === 5) return [0, Math.PI * 1.5];
-    else if (side === 2) return [Math.PI / 2, 0];
-    else if (side === 4) return [-Math.PI / 2, 0];
-    return [0, 0];
+  const getXYRotation = (x: number, y: number) => {
+    return [, y + Math.PI];
   };
 
   return (
@@ -50,12 +47,12 @@ const Cube: React.FC<Props> = ({ side, setSide }) => {
       <mesh ref={cubeRef} receiveShadow>
         <RoundedBox radius={0.05} receiveShadow>
           <MeshReflectorMaterial
-            blur={[50, 400]}
-            resolution={4096}
+            blur={[500, 400]}
+            resolution={1024}
             mixBlur={0.5}
-            mixStrength={5}
+            mixStrength={0.5}
             depthScale={2}
-            minDepthThreshold={2}
+            minDepthThreshold={5}
             color='#444'
             metalness={0.4}
             roughness={0.1}
