@@ -38,10 +38,6 @@ const Cube: React.FC<Props> = ({ side, setSide }) => {
     }
   };
 
-  const getXYRotation = (x: number, y: number) => {
-    return [, y + Math.PI];
-  };
-
   return (
     <>
       <mesh ref={cubeRef} receiveShadow>

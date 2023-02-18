@@ -1,4 +1,4 @@
-import { Text } from '@react-three/drei';
+import { MeshTransmissionMaterial, Text } from '@react-three/drei';
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Mesh } from 'three';
@@ -9,12 +9,17 @@ interface Props {
 
 const Contents: React.FC<Props> = ({ side }) => {
   const textRef = useRef<Mesh>(null);
+  const bgRef = useRef<Mesh>(null);
   const [text, setText] = useState<String>('Peyton Bechard');
 
   useEffect(() => {
     if (textRef.current) {
       gsap.to(textRef.current.position, { y: -3, duration: 0.5 });
       gsap.to(textRef.current.position, { y: 0, duration: 1, delay: 1.5 });
+    }
+    if (bgRef.current) {
+      gsap.to(bgRef.current.scale, { x: 0, y: 0, duration: 0.5 });
+      gsap.to(bgRef.current.scale, { x: 1, y: 1, duration: 1, delay: 1.5 });
     }
     if (side == 0) setText('Peyton Bechard');
     else if (side == 1) setText('About Me');
@@ -26,19 +31,17 @@ const Contents: React.FC<Props> = ({ side }) => {
 
   return (
     <>
-      <Text
-        ref={textRef}
-        // font='./fonts/Zeyada_Regular.json'
-        fontSize={0.05}
-        // height={0.01}
-        // curveSegments={24}
-        // bevelEnabled
-        // bevelThickness={0.001}
-        // bevelSize={0.001}
-        // bevelOffset={0}
-        // bevelSegments={12}
-        position={[0, -3, 1]}
-      >
+      <mesh ref={bgRef} position={[0, 0, 0.6]} rotation={[Math.PI * -2, 0, 0]}>
+        <planeGeometry args={[0.9, 0.9, 32, 32]} />
+        <MeshTransmissionMaterial
+          transmission={3}
+          distortionScale={3}
+          temporalDistortion={3}
+          wireframe
+          color={'#003300'}
+        />
+      </mesh>
+      <Text ref={textRef} fontSize={0.05} position={[0, -3, 1]}>
         {text}
         <meshStandardMaterial color={'mediumpurple'} />
       </Text>

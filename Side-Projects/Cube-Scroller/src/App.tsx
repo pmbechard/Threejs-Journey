@@ -42,8 +42,8 @@ function App() {
       <directionalLight position={[-3, 2, 2]} intensity={1.5} castShadow />
 
       <Float>
-        <Cube side={side} setSide={setSide} />
         <Contents side={side} />
+        <Cube side={side} setSide={setSide} />
       </Float>
     </>
   );
