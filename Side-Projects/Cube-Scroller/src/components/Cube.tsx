@@ -9,6 +9,7 @@ interface Props {
 }
 
 const Cube: React.FC<Props> = ({ side, setSide }) => {
+  const [inMotion, setInMotion] = useState<boolean>(false);
   const cubeRef = useRef<THREE.Mesh>(null);
 
   useEffect(() => {
@@ -17,6 +18,8 @@ const Cube: React.FC<Props> = ({ side, setSide }) => {
   });
 
   const rotate = () => {
+    if (inMotion) return;
+    setInMotion(true);
     if (cubeRef.current) {
       gsap.to(cubeRef.current?.position, {
         z: -5,
@@ -36,6 +39,9 @@ const Cube: React.FC<Props> = ({ side, setSide }) => {
         duration: 2,
       });
     }
+    setTimeout(() => {
+      setInMotion(false);
+    }, 2000);
   };
 
   return (
