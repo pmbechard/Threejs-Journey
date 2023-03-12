@@ -9,7 +9,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Canvas
     shadows
-    camera={{ fov: 45, near: 0.1, far: 200, position: [-4, -1.5, 3] }}
+    camera={{ fov: 45, near: 0.1, far: 200, position: [-1, 0, 2] }}
   >
     <App />
   </Canvas>
