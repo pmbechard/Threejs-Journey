@@ -1,5 +1,20 @@
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+}
+
+#root div {
+  touch-action: none;
+}
+
+.htmlScreen iframe {
+  width: 1024px;
+  height: 670px;
+  border: none;
+  border-radius: 20px;
+  background: #000000;
 }
